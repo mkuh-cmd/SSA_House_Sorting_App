@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>House Sorting Quiz</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      background: #0d0d2b;
+      color: #f0ead6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container { max-width: 700px; width: 100%; }
+
+    h1 { font-size: 3rem; letter-spacing: 0.1em; color: #e8c96e; text-shadow: 0 0 24px rgba(232,201,110,0.45); margin-bottom: 0.3em; }
+
+    /* ── SCREENS ── */
+    .screen { display: none; text-align: center; }
+    .screen.active { display: block; }
+    #screenIntro { text-align: center; }
+    #screenIntro p { font-size: 1.1rem; color: #b0a8c8; margin-bottom: 2rem; line-height: 1.6; }
+
+    /* ── CRESTS ── */
+    .crest-row { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .crest { width: 90px; height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px 4px 50% 50%; font-size: 2rem; font-weight: bold; gap: 6px; opacity: 0.85; }
+    .crest span { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .crest-legacy  { background: linear-gradient(160deg,#4a2060,#2a0f3a); border: 2px solid #9b59b6; color: #d7b8f0; }
+    .crest-valor   { background: linear-gradient(160deg,#7a1a1a,#3d0a0a); border: 2px solid #c0392b; color: #f0b8b8; }
+    .crest-horizon { background: linear-gradient(160deg,#0a3a5a,#051e30); border: 2px solid #2980b9; color: #b8d8f0; }
+
+    /* ── INTAKE FORM ── */
+    .intake-form { margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .intake-row { display: flex; gap: 0.8rem; width: 100%; max-width: 420px; }
+    .intake-field { display: flex; flex-direction: column; flex: 1; text-align: left; }
+    .intake-field.full { max-width: 420px; width: 100%; }
+    .intake-field label { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: #8888aa; margin-bottom: 0.4rem; }
+    .intake-field input { background: #1a1a38; border: 1.5px solid #333360; border-radius: 10px; color: #f0ead6; font-family: 'Palatino Linotype', Palatino, serif; font-size: 1rem; padding: 0.7rem 1rem; outline: none; transition: border-color 0.2s; width: 100%; }
+    .intake-field input:focus { border-color: #7b5ea7; }
+    .intake-field input::placeholder { color: #55558a; }
+    .intake-hint { font-size: 0.75rem; color: #55558a; margin-top: 0.25rem; }
+
+    /* ── QUIZ ── */
+    .progress-bar-wrap { background: #1e1e40; border-radius: 8px; height: 8px; margin-bottom: 2rem; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg,#9b59b6,#2980b9); border-radius: 8px; transition: width 0.4s ease; }
+    .question-counter { font-size: 0.8rem; letter-spacing: 0.12em; color: #8888aa; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .question-for { font-size: 0.95rem; color: #e8c96e; margin-bottom: 0.8rem; font-style: italic; }
+    .question-text { font-size: 1.35rem; line-height: 1.55; margin-bottom: 1.8rem; color: #f0ead6; text-align: left; }
+    .choices { display: flex; flex-direction: column; gap: 0.9rem; }
+    .choice-btn { background: #1a1a38; border: 1.5px solid #333360; border-radius: 10px; color: #d0cce8; font-family: 'Palatino Linotype', Palatino, serif; font-size: 1rem; padding: 1rem 1.3rem; cursor: pointer; text-align: left; transition: all 0.2s ease; line-height: 1.45; }
+    .choice-btn:hover { background: #252550; border-color: #7b5ea7; color: #fff; transform: translateX(4px); }
+    .choice-btn.selected { background: #2e1f50; border-color: #9b59b6; color: #e8d8ff; }
+    .nav-row { display: flex; justify-content: space-between; margin-top: 1.5rem; gap: 0.8rem; }
+    .nav-btn { background: #1a1a38; border: 1.5px solid #333360; border-radius: 10px; color: #9090b8; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 0.95rem; padding: 0.7rem 1.4rem; transition: all 0.2s; }
+    .nav-btn:hover:not(:disabled) { background: #252550; border-color: #7b5ea7; color: #fff; }
+    .nav-btn:disabled { opacity: 0.25; cursor: default; }
+    .nav-btn-next { background: linear-gradient(135deg,#5a3080,#1e5f8a); border-color: transparent; color: #fff; }
+    .nav-btn-next:hover:not(:disabled) { opacity: 0.88; }
+
+    /* ── COUNTDOWN ── */
+    #screenCountdown { position: fixed; inset: 0; background: #0d0d2b; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+    #screenCountdown.active { display: flex; }
+    #screenCountdown p { font-size: 1rem; letter-spacing: 0.18em; text-transform: uppercase; color: #8888aa; margin-bottom: 2rem; }
+    #countdownNumber { font-size: 18rem; color: #e8c96e; text-shadow: 0 0 60px rgba(232,201,110,0.6); line-height: 1; transition: transform 0.15s ease, opacity 0.15s ease; }
+
+    /* ── RESULT ── */
+    #screenResult { text-align: center; }
+    .result-greeting { font-size: 1.2rem; color: #e8c96e; margin-bottom: 0.3rem; }
+    .sorted-into { font-size: 0.85rem; letter-spacing: 0.12em; color: #8888aa; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .house-name { font-size: 2.6rem; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+    .house-reveal { margin: 1.2rem auto 1.5rem; width: 160px; height: 195px; border-radius: 6px 6px 80px 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 4rem; gap: 10px; }
+    .house-tagline { font-size: 1.05rem; color: #b0a8c8; font-style: italic; margin-bottom: 1.2rem; line-height: 1.5; }
+    .house-desc { font-size: 1rem; line-height: 1.7; max-width: 520px; margin: 0 auto 1.5rem; color: #c8c0e0; }
+    .breakdown-title { font-size: 0.8rem; letter-spacing: 0.12em; color: #8888aa; text-transform: uppercase; margin-bottom: 1rem; }
+    .breakdown-list { list-style: none; margin: 0 auto 1.8rem; max-width: 560px; display: flex; flex-direction: column; gap: 0.55rem; text-align: left; }
+    .breakdown-item { background: #16162e; border-left: 3px solid #333360; border-radius: 6px; padding: 0.55rem 0.9rem; font-size: 0.88rem; color: #b0aac8; display: flex; gap: 0.6rem; align-items: baseline; }
+    .breakdown-item .q-num { font-size: 0.72rem; color: #606088; min-width: 22px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.08em; }
+    .breakdown-item .b-answer { flex: 1; color: #d0cce8; }
+    .breakdown-item .b-badge { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; font-weight: bold; }
+    .badge-legacy  { background: #2e1050; color: #c8a0f0; border: 1px solid #9b59b6; }
+    .badge-valor   { background: #3d1010; color: #f0b0b0; border: 1px solid #c0392b; }
+    .badge-horizon { background: #0a2840; color: #a0ccf0; border: 1px solid #2980b9; }
+    .tally { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .tally-item { background: #1a1a38; border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.9rem; color: #9090b8; }
+    .tally-item strong { color: #e8c96e; }
+
+    /* ── HOUSE THEMES ── */
+    .legacy  .house-reveal { background: linear-gradient(160deg,#4a2060,#2a0f3a); border: 3px solid #9b59b6; }
+    .legacy  .house-name   { color: #d7b8f0; }
+    .valor   .house-reveal { background: linear-gradient(160deg,#7a1a1a,#3d0a0a); border: 3px solid #c0392b; }
+    .valor   .house-name   { color: #f0b8b8; }
+    .horizon .house-reveal { background: linear-gradient(160deg,#0a3a5a,#051e30); border: 3px solid #2980b9; }
+    .horizon .house-name   { color: #b8d8f0; }
+
+    /* ── BUTTONS ── */
+    .btn { background: linear-gradient(135deg,#5a3080,#1e5f8a); border: none; border-radius: 10px; color: #fff; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 1.1rem; letter-spacing: 0.05em; padding: 0.9rem 2.4rem; transition: opacity 0.2s, transform 0.15s; }
+    .btn:hover { opacity: 0.88; transform: translateY(-2px); }
+    .master-btn { background: transparent; border: 1px solid #2a2a4a; border-radius: 8px; color: #44446a; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 0.78rem; letter-spacing: 0.1em; padding: 0.45rem 1.1rem; transition: all 0.2s; }
+    .master-btn:hover { border-color: #555580; color: #8888aa; }
+
+    /* ── MASTER MODAL ── */
+    #masterOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; }
+    #masterOverlay.open { display: flex; align-items: center; justify-content: center; }
+    .master-modal { background: #12122a; border: 1.5px solid #333360; border-radius: 16px; padding: 2rem; width: 90%; max-width: 420px; }
+    .master-modal h2 { font-size: 1.3rem; letter-spacing: 0.08em; color: #e8c96e; margin-bottom: 0.3rem; text-align: center; }
+    .master-modal p.sub { font-size: 0.8rem; color: #55558a; margin-bottom: 1.2rem; text-align: center; }
+    .pwd-row { display: flex; gap: 0.6rem; margin-bottom: 0.7rem; }
+    .pwd-input { flex: 1; background: #0d0d2b; border: 1.5px solid #333360; border-radius: 8px; color: #f0ead6; font-size: 1rem; padding: 0.65rem 1rem; outline: none; font-family: 'Palatino Linotype', Palatino, serif; }
+    .pwd-input:focus { border-color: #7b5ea7; }
+    .pwd-btn { background: linear-gradient(135deg,#5a3080,#1e5f8a); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 0.95rem; padding: 0.65rem 1.1rem; }
+    .pwd-error { color: #e07070; font-size: 0.82rem; margin: 0 0 0.8rem; display: none; text-align: center; }
+    .modal-actions { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.2rem; }
+    .modal-action-btn { display: flex; align-items: center; gap: 0.9rem; background: #1a1a38; border: 1.5px solid #2a2a50; border-radius: 10px; color: #d0cce8; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 1rem; padding: 0.85rem 1.1rem; text-align: left; transition: all 0.2s; width: 100%; }
+    .modal-action-btn:hover { background: #252550; border-color: #7b5ea7; color: #fff; }
+    .modal-action-btn.danger:hover { background: #3a1010; border-color: #c0392b; color: #f0b8b8; }
+    .modal-action-btn .icon { font-size: 1.4rem; width: 32px; text-align: center; flex-shrink: 0; }
+    .modal-action-btn .label { font-weight: bold; display: block; }
+    .modal-action-btn .desc  { font-size: 0.78rem; color: #8888aa; display: block; margin-top: 2px; }
+    .modal-close { background: transparent; border: 1px solid #333360; border-radius: 8px; color: #55558a; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 0.9rem; padding: 0.5rem 1.5rem; transition: all 0.2s; display: block; margin: 0 auto; }
+    .modal-close:hover { border-color: #7b5ea7; color: #b0a8c8; }
+
+    /* ── STATS ── */
+    .stats-panel { display: none; margin-bottom: 1.2rem; }
+    .stats-panel.open { display: block; }
+    .stats-title { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: #8888aa; margin-bottom: 0.8rem; text-align: center; }
+    .stat-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.55rem; font-size: 0.9rem; }
+    .stat-label { width: 80px; color: #d0cce8; flex-shrink: 0; }
+    .stat-bar-wrap { flex: 1; background: #0d0d2b; border-radius: 4px; height: 14px; overflow: hidden; }
+    .stat-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; width: 0%; }
+    .stat-count { width: 28px; text-align: right; color: #e8c96e; font-weight: bold; flex-shrink: 0; }
+    .stat-bar.legacy  { background: linear-gradient(90deg,#9b59b6,#6c3483); }
+    .stat-bar.valor   { background: linear-gradient(90deg,#c0392b,#922b21); }
+    .stat-bar.horizon { background: linear-gradient(90deg,#2980b9,#1a5276); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- MASTER MODAL (outside all screens) -->
+  <div id="masterOverlay">
+    <div class="master-modal">
+      <h2>⚙ Master Access</h2>
+
+      <!-- Step 1: Password -->
+      <div id="masterStep1">
+        <p class="sub">Enter your password to continue.</p>
+        <div class="pwd-row">
+          <input type="password" id="masterPwdInput" class="pwd-input" placeholder="Password…"
+            onkeydown="if(event.key==='Enter') masterSubmitPwd()" />
+          <button class="pwd-btn" onclick="masterSubmitPwd()">Enter</button>
+        </div>
+        <p id="masterPwdError" class="pwd-error">Incorrect password. Try again.</p>
+        <div style="text-align:center;">
+          <button class="modal-close" onclick="closeMaster()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Menu -->
+      <div id="masterStep2" style="display:none;">
+        <p class="sub">Logged in as teacher</p>
+
+        <div class="stats-panel" id="statsPanel">
+          <div class="stats-title">House Distribution (this device)</div>
+          <div class="stat-row">
+            <span class="stat-label">📜 Legacy</span>
+            <div class="stat-bar-wrap"><div class="stat-bar legacy" id="barLegacy"></div></div>
+            <span class="stat-count" id="countLegacy">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">⚔️ Valor</span>
+            <div class="stat-bar-wrap"><div class="stat-bar valor" id="barValor"></div></div>
+            <span class="stat-count" id="countValor">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">🔭 Horizon</span>
+            <div class="stat-bar-wrap"><div class="stat-bar horizon" id="barHorizon"></div></div>
+            <span class="stat-count" id="countHorizon">0</span>
+          </div>
+          <p id="statsTotalLine" style="font-size:0.75rem;color:#55558a;text-align:center;margin-top:0.6rem;"></p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-action-btn" onclick="masterOpenSheet()">
+            <span class="icon">📊</span>
+            <span><span class="label">View Results Sheet</span><span class="desc">Open Google Sheet with all submissions</span></span>
+          </button>
+          <button class="modal-action-btn" onclick="masterToggleStats()">
+            <span class="icon">🏆</span>
+            <span><span class="label">House Stats</span><span class="desc">See house distribution from this device</span></span>
+          </button>
+          <button class="modal-action-btn" onclick="masterResetDevice()">
+            <span class="icon">🔄</span>
+            <span><span class="label">Reset for Next Student</span><span class="desc">Clear the screen and return to the start</span></span>
+          </button>
+          <button class="modal-action-btn danger" onclick="masterClearLog()">
+            <span class="icon">🗑️</span>
+            <span><span class="label">Clear Session Log</span><span class="desc">Wipe local house stats for this device</span></span>
+          </button>
+        </div>
+
+        <button class="modal-close" onclick="closeMaster()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div id="screenIntro">
+    <h1>The Sorting</h1>
+    <p>Answer 10 questions honestly.<br>Your house will find you.</p>
+    <div class="crest-row">
+      <div class="crest crest-legacy">📜<span>Legacy</span></div>
+      <div class="crest crest-valor">⚔️<span>Valor</span></div>
+      <div class="crest crest-horizon">🔭<span>Horizon</span></div>
+    </div>
+    <div class="intake-form">
+      <div class="intake-row">
+        <div class="intake-field">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" placeholder="First…" maxlength="50" />
+        </div>
+        <div class="intake-field">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" placeholder="Last…" maxlength="50" />
+        </div>
+      </div>
+      <div class="intake-field full">
+        <label for="studentEmail">Student Email</label>
+        <input type="email" id="studentEmail" placeholder="student#@student.myscps.us" maxlength="100"
+               onkeydown="if(event.key==='Enter') startQuiz()" />
+        <span class="intake-hint">e.g. 123456@student.myscps.us</span>
+      </div>
+    </div>
+    <button class="btn" onclick="startQuiz()">Begin the Sorting</button>
+    <div style="margin-top:2.5rem;">
+      <button class="master-btn" onclick="openMaster()">⚙ Master Access</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screenQuiz" style="display:none;">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="question-counter" id="questionCounter"></div>
+    <div class="question-for" id="questionFor"></div>
+    <div class="question-text" id="questionText"></div>
+    <div class="choices" id="choices"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="backBtn" onclick="goBack()">← Main Page</button>
+      <button class="nav-btn nav-btn-next" id="nextBtn" onclick="goNext()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div id="screenCountdown">
+    <p>The sorting is deciding…</p>
+    <div id="countdownNumber">10</div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screenResult" style="display:none;">
+    <div class="result-greeting" id="resultGreeting"></div>
+    <div class="sorted-into">you have been sorted into</div>
+    <div class="house-name" id="houseName"></div>
+    <div class="house-reveal" id="houseReveal"></div>
+    <div class="house-tagline" id="houseTagline"></div>
+    <div class="house-desc" id="houseDesc"></div>
+    <div class="breakdown-title">Your answers</div>
+    <ul class="breakdown-list" id="breakdown"></ul>
+    <div class="tally" id="tally"></div>
+  </div>
+
+</div><!-- .container -->
+
+<script>
+// ── CONFIG ──
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE';
+const SCRIPT_URL       = 'YOUR_APPS_SCRIPT_URL_HERE';
+const SHEET_URL        = 'YOUR_GOOGLE_SHEET_URL_HERE';
+const MASTER_PASSWORD  = '12345678';
+const HOUSE_CAP        = 120;
+
+// ── DATA ──
+const QUESTIONS = [
+  { text: "You discover an old building. What interests you the most?",
+    choices: [{ text: "Learning about what it was used for", house: "Legacy" },
+              { text: "Figuring out a cool way to use it now", house: "Valor" },
+              { text: "Imagining what might replace it in the future", house: "Horizon" }] },
+  { text: "When starting a project, what do you usually do first?",
+    choices: [{ text: "Ask older students what they did and how they approached it", house: "Legacy" },
+              { text: "Just dive in and see what works and what doesn't", house: "Valor" },
+              { text: "Create an outline or sketch of what you want it to look like in the end", house: "Horizon" }] },
+  { text: "Which item would you rather receive?",
+    choices: [{ text: "An item that has been in your family for generations", house: "Legacy" },
+              { text: "Tickets to a concert this weekend", house: "Valor" },
+              { text: "A prototype for the new iPhone", house: "Horizon" }] },
+  { text: "In a group project, which role are you most likely to choose?",
+    choices: [{ text: "Researcher and record keeper", house: "Legacy" },
+              { text: "Illustrator and writer", house: "Valor" },
+              { text: "Idea generator and planner", house: "Horizon" }] },
+  { text: "What kind of question do you ask most often?",
+    choices: [{ text: "How did we get here?", house: "Legacy" },
+              { text: "What's happening right now?", house: "Valor" },
+              { text: "What will happen next?", house: "Horizon" }] },
+  { text: "Which quote appeals to you most?",
+    choices: [{ text: '"Let go of the past, but keep the lessons it taught you."', house: "Legacy" },
+              { text: '"Make the most of every moment."', house: "Valor" },
+              { text: '"The possibilities are endless."', house: "Horizon" }] },
+  { text: "If you could only visit one, which do you choose?",
+    choices: [{ text: "Back to a time period of your choice", house: "Legacy" },
+              { text: "Your favorite artist/band's concert", house: "Valor" },
+              { text: "One hundred years into the future", house: "Horizon" }] },
+  { text: "When making decisions, what influences you the most?",
+    choices: [{ text: "What worked for me previously", house: "Legacy" },
+              { text: "My current circumstances", house: "Valor" },
+              { text: "Where I want to be in 5 years", house: "Horizon" }] },
+  { text: "What would you rather have?",
+    choices: [{ text: "Stories", house: "Legacy" },
+              { text: "Experiences", house: "Valor" },
+              { text: "Ideas", house: "Horizon" }] },
+  { text: "Which school assignment sounds most interesting?",
+    choices: [{ text: "Investigating life and art from previous generations", house: "Legacy" },
+              { text: "Solving a real-world problem today", house: "Valor" },
+              { text: "Predicting what life will look like in 100 years", house: "Horizon" }] }
+];
+
+const HOUSES = {
+  Legacy:  { emoji: "📜", tagline: "Rooted in wisdom. Guided by the past.",    desc: "You are a keeper of history and tradition. You find strength in the stories and lessons that came before you, and you believe the past is the best teacher for the present. House Legacy values memory, heritage, and the wisdom of those who walked these halls before you.", cls: "legacy" },
+  Valor:   { emoji: "⚔️", tagline: "Bold in action. Present in every moment.", desc: "You are driven by the here and now. You throw yourself into experiences, trust your instincts, and make things happen in the present. House Valor values courage, creativity, and the energy it takes to seize every moment as it comes.", cls: "valor" },
+  Horizon: { emoji: "🔭", tagline: "Eyes forward. Mind on what's possible.",   desc: "You are a dreamer and a planner. You see potential where others see limits, and you are always thinking about what could be. House Horizon values vision, innovation, and the imagination to build a future that doesn't exist yet.", cls: "horizon" }
+};
+
+// ── STATE ──
+let questions = [];
+let answers   = [];
+let current   = 0;
+let scores    = { Legacy: 0, Valor: 0, Horizon: 0 };
+let studentName  = '';
+let studentEmail = '';
+
+// ── GOOGLE SIGN-IN ──
+window.addEventListener('load', () => {
+  if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') return;
+  if (typeof google === 'undefined') return;
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleLogin });
+  google.accounts.id.renderButton(document.getElementById('googleBtn') || document.createElement('div'),
+    { theme: 'filled_black', size: 'large', shape: 'rectangular', width: 280 });
+});
+
+function handleGoogleLogin(response) {
+  const p = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+  document.getElementById('firstName').value    = p.given_name  || '';
+  document.getElementById('lastName').value     = p.family_name || '';
+  document.getElementById('studentEmail').value = p.email       || '';
+}
+
+// Shift+R = reset for testing
+document.addEventListener('keydown', e => {
+  if (e.shiftKey && e.key === 'R') { localStorage.removeItem('houseSort_log'); location.reload(); }
+});
+
+// ── SCREEN HELPERS ──
+function show(id) {
+  ['screenIntro','screenQuiz','screenCountdown','screenResult'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById(id);
+  if (target) target.style.display = 'block';
+}
+
+// ── QUIZ ──
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  const first = document.getElementById('firstName').value.trim();
+  const last  = document.getElementById('lastName').value.trim();
+  studentEmail = document.getElementById('studentEmail').value.trim();
+  studentName  = [first, last].filter(Boolean).join(' ') || 'Seeker';
+  questions = shuffle([...QUESTIONS]);
+  answers   = [];
+  current   = 0;
+  show('screenQuiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q     = questions[current];
+  const saved = answers[current];
+
+  document.getElementById('questionCounter').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('progressBar').style.width     = `${(current / questions.length) * 100}%`;
+  document.getElementById('questionFor').textContent     = studentName !== 'Seeker' ? `For ${studentName}…` : '';
+  document.getElementById('questionText').textContent    = q.text;
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn' + (saved && saved.choiceIndex === i ? ' selected' : '');
+    btn.textContent = c.text;
+    btn.onclick = () => selectChoice(i);
+    choicesEl.appendChild(btn);
+  });
+
+  const backBtn = document.getElementById('backBtn');
+  backBtn.textContent = current === 0 ? '← Main Page' : '← Back';
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.textContent = current === questions.length - 1 ? 'Submit ✓' : 'Next →';
+  nextBtn.disabled = !saved;
+}
+
+function selectChoice(i) {
+  document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.choice-btn')[i].classList.add('selected');
+  answers[current] = { choiceIndex: i, house: questions[current].choices[i].house };
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.disabled = false;
+  nextBtn.textContent = current === questions.length - 1 ? 'Submit ✓' : 'Next →';
+}
+
+function goNext() {
+  if (!answers[current]) return;
+  if (current < questions.length - 1) { current++; renderQuestion(); return; }
+  buildScores();
+  startCountdown();
+}
+
+function goBack() {
+  if (current === 0) { show('screenIntro'); return; }
+  current--;
+  renderQuestion();
+}
+
+function buildScores() {
+  scores = { Legacy: 0, Valor: 0, Horizon: 0 };
+  answers.forEach(a => { if (a) scores[a.house]++; });
+}
+
+// ── COUNTDOWN ──
+function startCountdown() {
+  document.getElementById('screenQuiz').style.display = 'none';
+  const cd = document.getElementById('screenCountdown');
+  cd.style.display = 'flex';
+
+  let count = 10;
+  const numEl = document.getElementById('countdownNumber');
+  numEl.textContent = count;
+
+  const iv = setInterval(() => {
+    numEl.style.transform = 'scale(1.3)';
+    numEl.style.opacity   = '0.3';
+    setTimeout(() => {
+      count--;
+      if (count <= 0) {
+        clearInterval(iv);
+        cd.style.display = 'none';
+        showResult();
+      } else {
+        numEl.textContent    = count;
+        numEl.style.transform = 'scale(1)';
+        numEl.style.opacity   = '1';
+      }
+    }, 150);
+  }, 1000);
+}
+
+// ── RESULT ──
+function showResult() {
+  // Determine winner, respecting house cap
+  const log = JSON.parse(localStorage.getItem('houseSort_log') || '[]');
+  const houseCounts = { Legacy: 0, Valor: 0, Horizon: 0 };
+  log.forEach(r => { if (houseCounts[r.house] !== undefined) houseCounts[r.house]++; });
+
+  const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const naturalWinner = ranked[0][0];
+  const winner = houseCounts[naturalWinner] < HOUSE_CAP
+    ? naturalWinner
+    : Object.entries(houseCounts).sort((a, b) => a[1] - b[1])[0][0];
+
+  const h = HOUSES[winner];
+  const resultEl = document.getElementById('screenResult');
+  resultEl.className = h.cls;
+  show('screenResult');
+
+  const greeting  = studentName !== 'Seeker' ? `Well done, ${studentName}.` : 'The sorting is complete.';
+  const emailLine = studentEmail ? ` · ${studentEmail}` : '';
+  document.getElementById('resultGreeting').textContent = greeting + emailLine;
+  document.getElementById('houseName').textContent      = winner;
+  document.getElementById('houseReveal').innerHTML      = h.emoji;
+  document.getElementById('houseTagline').textContent   = h.tagline;
+  document.getElementById('houseDesc').textContent      = h.desc;
+
+  document.getElementById('breakdown').innerHTML = answers.map((a, idx) => {
+    const choice     = questions[idx].choices[a.choiceIndex];
+    const badgeClass = `badge-${choice.house.toLowerCase()}`;
+    return `<li class="breakdown-item">
+      <span class="q-num">Q${idx + 1}</span>
+      <span class="b-answer">${choice.text}</span>
+      <span class="b-badge ${badgeClass}">${choice.house}</span>
+    </li>`;
+  }).join('');
+
+  document.getElementById('tally').innerHTML = Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .map(([n, c]) => `<div class="tally-item">${n}: <strong>${c}</strong></div>`)
+    .join('');
+
+  // Save to local log
+  const entry = { name: studentName, email: studentEmail, house: winner, timestamp: new Date().toISOString() };
+  log.push(entry);
+  localStorage.setItem('houseSort_log', JSON.stringify(log));
+
+  // Save to Google Sheet
+  const submission = {
+    firstName: document.getElementById('firstName').value.trim(),
+    lastName:  document.getElementById('lastName').value.trim(),
+    email:     studentEmail,
+    house:     winner,
+    scores,
+    answers:   answers.map((a, idx) => questions[idx].choices[a.choiceIndex].text),
+    timestamp: entry.timestamp
+  };
+  if (SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(submission) }).catch(() => {});
+  }
+}
+
+// ── MASTER ACCESS ──
+function openMaster() {
+  document.getElementById('masterPwdInput').value    = '';
+  document.getElementById('masterPwdError').style.display = 'none';
+  document.getElementById('masterStep1').style.display   = 'block';
+  document.getElementById('masterStep2').style.display   = 'none';
+  document.getElementById('statsPanel').classList.remove('open');
+  document.getElementById('masterOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('masterPwdInput').focus(), 50);
+}
+
+function closeMaster() {
+  document.getElementById('masterOverlay').classList.remove('open');
+}
+
+function masterSubmitPwd() {
+  const val = document.getElementById('masterPwdInput').value;
+  if (val !== MASTER_PASSWORD) {
+    document.getElementById('masterPwdError').style.display = 'block';
+    document.getElementById('masterPwdInput').value = '';
+    document.getElementById('masterPwdInput').focus();
+    return;
+  }
+  document.getElementById('masterStep1').style.display = 'none';
+  document.getElementById('masterStep2').style.display = 'block';
+}
+
+function masterOpenSheet() {
+  if (SHEET_URL === 'YOUR_GOOGLE_SHEET_URL_HERE') { alert('Sheet URL not configured yet.'); return; }
+  window.open(SHEET_URL, '_blank');
+}
+
+function masterToggleStats() {
+  const panel = document.getElementById('statsPanel');
+  panel.classList.toggle('open');
+  if (!panel.classList.contains('open')) return;
+  const log    = JSON.parse(localStorage.getItem('houseSort_log') || '[]');
+  const tally  = { Legacy: 0, Valor: 0, Horizon: 0 };
+  log.forEach(r => { if (tally[r.house] !== undefined) tally[r.house]++; });
+  const total  = log.length;
+  const maxVal = Math.max(...Object.values(tally), 1);
+  ['Legacy','Valor','Horizon'].forEach(h => {
+    document.getElementById('bar'   + h).style.width     = Math.round((tally[h] / maxVal) * 100) + '%';
+    document.getElementById('count' + h).textContent     = tally[h];
+  });
+  document.getElementById('statsTotalLine').textContent =
+    total === 0 ? 'No submissions yet.' : `${total} total submission${total !== 1 ? 's' : ''} on this device`;
+}
+
+function masterResetDevice() {
+  closeMaster();
+  location.reload();
+}
+
+function masterClearLog() {
+  if (!confirm('Clear all local session stats? This does not affect the Google Sheet.')) return;
+  localStorage.removeItem('houseSort_log');
+  document.getElementById('statsPanel').classList.remove('open');
+  alert('Session log cleared.');
+}
+
+// Close modal when clicking backdrop
+document.getElementById('masterOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeMaster();
+});
+</script>
+</body>
+</html>
