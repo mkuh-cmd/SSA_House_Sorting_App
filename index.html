@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>House Sorting Quiz</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -345,22 +344,6 @@ let current   = 0;
 let scores    = { Legacy: 0, Valor: 0, Horizon: 0 };
 let studentName  = '';
 let studentEmail = '';
-
-// ── GOOGLE SIGN-IN ──
-window.addEventListener('load', () => {
-  if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') return;
-  if (typeof google === 'undefined') return;
-  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleLogin });
-  google.accounts.id.renderButton(document.getElementById('googleBtn') || document.createElement('div'),
-    { theme: 'filled_black', size: 'large', shape: 'rectangular', width: 280 });
-});
-
-function handleGoogleLogin(response) {
-  const p = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-  document.getElementById('firstName').value    = p.given_name  || '';
-  document.getElementById('lastName').value     = p.family_name || '';
-  document.getElementById('studentEmail').value = p.email       || '';
-}
 
 // Shift+R = reset for testing
 document.addEventListener('keydown', e => {
