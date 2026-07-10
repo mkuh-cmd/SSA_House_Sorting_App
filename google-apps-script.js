@@ -132,7 +132,7 @@ function sendResultEmail(data) {
     badgeBg: '#333', accent: '#aaa', border: '#555', star: '#ccc'
   };
   const name = [data.firstName, data.lastName].filter(Boolean).join(' ') || 'Student';
-  const subject = `✨ You have been sorted into House ${data.house}!`;
+  const subject = `You have been sorted into House ${data.house}!`;
 
   const scoreRows = [
     { house: 'Legacy',  emoji: '📜', score: data.scores.Legacy  || 0, color: '#c084f5' },
@@ -200,6 +200,15 @@ function sendResultEmail(data) {
         <table style="width:100%;border-collapse:collapse;">${scoreBarRows}</table>
       </div>
 
+      <!-- SPAM NOTE -->
+      <div style="background:#0a0a1e;border:1px solid #222244;border-radius:8px;padding:14px 18px;margin-bottom:24px;text-align:center;">
+        <p style="margin:0;font-size:0.78rem;color:#555588;line-height:1.6;">
+          Found this in spam? Mark it <strong style="color:#9090b8;">Not Spam</strong> and add
+          <strong style="color:#9090b8;">ssa.data.management@gmail.com</strong> to your contacts
+          so future messages arrive in your inbox.
+        </p>
+      </div>
+
       <!-- DIVIDER -->
       <div style="border-top:1px solid #1e1e40;margin:0 0 24px;"></div>
 
@@ -221,8 +230,18 @@ function sendResultEmail(data) {
   MailApp.sendEmail({ to: data.email, from: 'ssa.data.management@gmail.com', name: 'SSA House Sorting', subject: subject, htmlBody: body });
 }
 
-// Allows CORS preflight
-function doGet() {
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'counts') {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const counts = {};
+    ['Legacy', 'Valor', 'Horizon'].forEach(h => {
+      const tab = ss.getSheetByName(h);
+      counts[h] = tab ? Math.max(tab.getLastRow() - 1, 0) : 0;
+    });
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', counts }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'ok' }))
     .setMimeType(ContentService.MimeType.JSON);

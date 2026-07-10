@@ -283,7 +283,7 @@
 // ── CONFIG ──
 const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE';
 const SCRIPT_URL       = 'https://script.google.com/macros/s/AKfycbwCArUlERvpnxjfZb8IQcgcaoO1HA5l5Qe2bdEgRkAndWgE0bkk86qcR_nebXiQlwtoHA/exec';
-const SHEET_URL        = 'YOUR_GOOGLE_SHEET_URL_HERE';
+const SHEET_URL        = 'https://docs.google.com/spreadsheets/d/1BKjoAogVRM2ezBZWiJuyyUlgAk9vv5Ylc9T89A2azvY/edit';
 const MASTER_PASSWORD  = '12345678';
 const HOUSE_CAP        = 120;
 
@@ -565,17 +565,26 @@ function masterToggleStats() {
   const panel = document.getElementById('statsPanel');
   panel.classList.toggle('open');
   if (!panel.classList.contains('open')) return;
-  const log    = JSON.parse(localStorage.getItem('houseSort_log') || '[]');
-  const tally  = { Legacy: 0, Valor: 0, Horizon: 0 };
-  log.forEach(r => { if (tally[r.house] !== undefined) tally[r.house]++; });
-  const total  = log.length;
-  const maxVal = Math.max(...Object.values(tally), 1);
-  ['Legacy','Valor','Horizon'].forEach(h => {
-    document.getElementById('bar'   + h).style.width     = Math.round((tally[h] / maxVal) * 100) + '%';
-    document.getElementById('count' + h).textContent     = tally[h];
-  });
-  document.getElementById('statsTotalLine').textContent =
-    total === 0 ? 'No submissions yet.' : `${total} total submission${total !== 1 ? 's' : ''} on this device`;
+
+  document.getElementById('statsTotalLine').textContent = 'Loading live counts…';
+
+  fetch(SCRIPT_URL + '?action=counts')
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== 'ok') throw new Error('bad response');
+      const tally  = data.counts;
+      const total  = (tally.Legacy || 0) + (tally.Valor || 0) + (tally.Horizon || 0);
+      const maxVal = Math.max(...Object.values(tally), 1);
+      ['Legacy','Valor','Horizon'].forEach(h => {
+        document.getElementById('bar'   + h).style.width = Math.round(((tally[h] || 0) / maxVal) * 100) + '%';
+        document.getElementById('count' + h).textContent = tally[h] || 0;
+      });
+      document.getElementById('statsTotalLine').textContent =
+        total === 0 ? 'No submissions yet.' : `${total} total submission${total !== 1 ? 's' : ''} across all devices`;
+    })
+    .catch(() => {
+      document.getElementById('statsTotalLine').textContent = 'Could not load live data.';
+    });
 }
 
 function masterResetDevice() {
