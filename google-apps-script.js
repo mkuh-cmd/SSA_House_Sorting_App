@@ -302,10 +302,7 @@ function createSyncTrigger() {
 }
 
 function onSheetChange(e) {
-  // Only sync when rows are deleted from Submissions
-  const sheet = e && e.source ? e.source.getActiveSheet() : null;
-  if (!sheet || sheet.getName() !== SHEET_NAME) return;
-  if (e.changeType === 'REMOVE_ROW') syncHouseTabs();
+  syncHouseTabs();
 }
 
 function doGet(e) {
