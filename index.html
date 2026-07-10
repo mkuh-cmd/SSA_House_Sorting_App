@@ -104,6 +104,8 @@
     .btn:hover { opacity: 0.88; transform: translateY(-2px); }
     .master-btn { background: transparent; border: 1px solid #2a2a4a; border-radius: 8px; color: #44446a; cursor: pointer; font-family: 'Palatino Linotype', Palatino, serif; font-size: 0.78rem; letter-spacing: 0.1em; padding: 0.45rem 1.1rem; transition: all 0.2s; }
     .master-btn:hover { border-color: #555580; color: #8888aa; }
+    .return-btn { margin-top: 2rem; padding: 0.85rem 2rem; background: transparent; border: 1.5px solid #555580; border-radius: 10px; color: #aaaacc; font-family: 'Palatino Linotype', Palatino, serif; font-size: 1rem; letter-spacing: 0.08em; cursor: pointer; transition: all 0.25s; }
+    .return-btn:hover { background: #1a1a38; border-color: #9b9bc8; color: #e0e0f0; }
 
     /* ── MASTER MODAL ── */
     #masterOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; }
@@ -275,6 +277,7 @@
     <div class="breakdown-title">Your answers</div>
     <ul class="breakdown-list" id="breakdown"></ul>
     <div class="tally" id="tally"></div>
+    <button class="return-btn" onclick="returnToMain()">🏠 Return to Main Menu</button>
   </div>
 
 </div><!-- .container -->
@@ -597,6 +600,10 @@ function masterClearLog() {
   localStorage.removeItem('houseSort_log');
   document.getElementById('statsPanel').classList.remove('open');
   alert('Session log cleared.');
+}
+
+function returnToMain() {
+  show('screenIntro');
 }
 
 // Close modal when clicking backdrop
