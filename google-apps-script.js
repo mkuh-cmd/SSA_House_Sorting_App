@@ -218,7 +218,7 @@ function sendResultEmail(data) {
 </body>
 </html>`;
 
-  MailApp.sendEmail({ to: data.email, subject: subject, htmlBody: body });
+  MailApp.sendEmail({ to: data.email, from: 'ssa.data.management@gmail.com', name: 'SSA House Sorting', subject: subject, htmlBody: body });
 }
 
 // Allows CORS preflight
