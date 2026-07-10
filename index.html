@@ -374,7 +374,7 @@ function startQuiz() {
   const last  = document.getElementById('lastName').value.trim();
   studentEmail = document.getElementById('studentEmail').value.trim();
   studentName  = [first, last].filter(Boolean).join(' ') || 'Seeker';
-  questions = shuffle([...QUESTIONS]);
+  questions = shuffle([...QUESTIONS]).map(q => ({ ...q, choices: shuffle([...q.choices]) }));
   answers   = [];
   current   = 0;
   show('screenQuiz');
@@ -394,7 +394,7 @@ function renderQuestion() {
   choicesEl.innerHTML = '';
   q.choices.forEach((c, i) => {
     const btn = document.createElement('button');
-    btn.className = 'choice-btn' + (saved && saved.choiceIndex === i ? ' selected' : '');
+    btn.className = 'choice-btn' + (saved && saved.text === c.text ? ' selected' : '');
     btn.textContent = c.text;
     btn.onclick = () => selectChoice(i);
     choicesEl.appendChild(btn);
@@ -411,7 +411,8 @@ function renderQuestion() {
 function selectChoice(i) {
   document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('.choice-btn')[i].classList.add('selected');
-  answers[current] = { choiceIndex: i, house: questions[current].choices[i].house };
+  const chosen = questions[current].choices[i];
+  answers[current] = { house: chosen.house, text: chosen.text };
   const nextBtn = document.getElementById('nextBtn');
   nextBtn.disabled = false;
   nextBtn.textContent = current === questions.length - 1 ? 'Submit ✓' : 'Next →';
@@ -490,12 +491,11 @@ function showResult() {
   document.getElementById('houseDesc').textContent      = h.desc;
 
   document.getElementById('breakdown').innerHTML = answers.map((a, idx) => {
-    const choice     = questions[idx].choices[a.choiceIndex];
-    const badgeClass = `badge-${choice.house.toLowerCase()}`;
+    const badgeClass = `badge-${a.house.toLowerCase()}`;
     return `<li class="breakdown-item">
       <span class="q-num">Q${idx + 1}</span>
-      <span class="b-answer">${choice.text}</span>
-      <span class="b-badge ${badgeClass}">${choice.house}</span>
+      <span class="b-answer">${a.text}</span>
+      <span class="b-badge ${badgeClass}">${a.house}</span>
     </li>`;
   }).join('');
 
@@ -516,7 +516,7 @@ function showResult() {
     email:     studentEmail,
     house:     winner,
     scores,
-    answers:   answers.map((a, idx) => questions[idx].choices[a.choiceIndex].text),
+    answers:   answers.map(a => a.text),
     timestamp: entry.timestamp
   };
   if (SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
