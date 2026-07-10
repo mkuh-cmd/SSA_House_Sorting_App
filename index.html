@@ -413,9 +413,14 @@ function selectChoice(i) {
   document.querySelectorAll('.choice-btn')[i].classList.add('selected');
   const chosen = questions[current].choices[i];
   answers[current] = { house: chosen.house, text: chosen.text };
-  const nextBtn = document.getElementById('nextBtn');
-  nextBtn.disabled = false;
-  nextBtn.textContent = current === questions.length - 1 ? 'Submit ✓' : 'Next →';
+
+  if (current < questions.length - 1) {
+    setTimeout(() => { current++; renderQuestion(); }, 300);
+  } else {
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Submit ✓';
+  }
 }
 
 function goNext() {
