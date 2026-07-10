@@ -230,6 +230,84 @@ function sendResultEmail(data) {
   MailApp.sendEmail({ to: data.email, from: 'ssa.data.management@gmail.com', name: 'SSA House Sorting', subject: subject, htmlBody: body });
 }
 
+// ── SYNC: rebuilds house tabs from Submissions ──
+function syncHouseTabs() {
+  const ss      = SpreadsheetApp.getActiveSpreadsheet();
+  const subSheet = ss.getSheetByName(SHEET_NAME);
+  if (!subSheet) return;
+
+  const rows = subSheet.getDataRange().getValues();
+  if (rows.length < 2) {
+    // No data rows — clear house tabs
+    ['Legacy','Valor','Horizon'].forEach(h => {
+      const tab = ss.getSheetByName(h);
+      if (tab && tab.getLastRow() > 1) tab.deleteRows(2, tab.getLastRow() - 1);
+    });
+    return;
+  }
+
+  const header = rows[0]; // Submissions header row
+  const houseColIndex = header.indexOf('House'); // column F (index 5)
+
+  const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Email',
+                        'Legacy Score', 'Valor Score', 'Horizon Score',
+                        'Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10'];
+  const houseColors  = { Legacy: '#6c2fa0', Valor: '#c0392b', Horizon: '#2471a3' };
+  const tabColors    = { Legacy: '#d7b8f0', Valor: '#f0b8b8', Horizon: '#b8d8f0' };
+
+  ['Legacy','Valor','Horizon'].forEach(h => {
+    let tab = ss.getSheetByName(h);
+    if (!tab) {
+      tab = ss.insertSheet(h);
+      tab.appendRow(houseHeaders);
+      tab.getRange(1,1,1,houseHeaders.length).setFontWeight('bold')
+         .setBackground(houseColors[h]).setFontColor('#ffffff');
+      tab.setFrozenRows(1);
+      tab.setTabColor(tabColors[h]);
+    } else {
+      // Clear existing data rows, keep header
+      if (tab.getLastRow() > 1) tab.deleteRows(2, tab.getLastRow() - 1);
+    }
+
+    // Re-populate from Submissions rows that match this house
+    let houseNum = 1;
+    rows.slice(1).forEach(row => {
+      if (row[houseColIndex] === h) {
+        tab.appendRow([
+          houseNum++,
+          row[1],  // Timestamp
+          row[2],  // First Name
+          row[3],  // Last Name
+          row[4],  // Email
+          row[6],  // Legacy Score
+          row[7],  // Valor Score
+          row[8],  // Horizon Score
+          row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16], row[17], row[18]
+        ]);
+      }
+    });
+  });
+}
+
+// Run this ONCE to set up the auto-sync trigger
+function createSyncTrigger() {
+  // Remove any existing onChange triggers to avoid duplicates
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === 'onSheetChange') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('onSheetChange')
+    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .onChange()
+    .create();
+}
+
+function onSheetChange(e) {
+  // Only sync when rows are deleted from Submissions
+  const sheet = e && e.source ? e.source.getActiveSheet() : null;
+  if (!sheet || sheet.getName() !== SHEET_NAME) return;
+  if (e.changeType === 'REMOVE_ROW') syncHouseTabs();
+}
+
 function doGet(e) {
   if (e && e.parameter && e.parameter.action === 'counts') {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
