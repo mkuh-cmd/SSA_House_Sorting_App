@@ -286,8 +286,6 @@
     <div class="house-reveal" id="houseReveal"></div>
     <div class="house-tagline" id="houseTagline"></div>
     <div class="house-desc" id="houseDesc"></div>
-    <div class="breakdown-title">Your answers</div>
-    <ul class="breakdown-list" id="breakdown"></ul>
     <div class="tally" id="tally"></div>
     <button class="return-btn" onclick="returnToMain()">🏠 Return to Main Menu</button>
   </div>
@@ -528,9 +526,7 @@ function showResult() {
     [1850, () => { animEl(resultEl.querySelector('.house-reveal'), 'anim-emblem'); fireParticles(pc); }],
     [2700, () => animEl(resultEl.querySelector('.house-tagline'), 'anim-fade-up')],
     [3150, () => animEl(resultEl.querySelector('.house-desc'), 'anim-fade-up')],
-    [3550, () => { animEl(resultEl.querySelector('.breakdown-title'), 'anim-fade-up');
-                   animEl(resultEl.querySelector('.breakdown-list'), 'anim-fade-up');
-                   animEl(resultEl.querySelector('.tally'), 'anim-fade-up'); }],
+    [3550, () => animEl(resultEl.querySelector('.tally'), 'anim-fade-up')],
     [4000, () => animEl(resultEl.querySelector('.return-btn'), 'anim-fade-up')],
   ];
   seq.forEach(([t, fn]) => setTimeout(fn, t));
