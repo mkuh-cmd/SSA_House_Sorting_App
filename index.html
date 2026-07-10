@@ -570,7 +570,12 @@ function showResult() {
     timestamp: entry.timestamp
   };
   if (SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(submission) }).catch(() => {});
+    const payload = JSON.stringify(submission);
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(SCRIPT_URL, new Blob([payload], { type: 'text/plain' }));
+    } else {
+      fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: payload }).catch(() => {});
+    }
   }
 }
 
