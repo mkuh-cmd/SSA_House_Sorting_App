@@ -415,7 +415,7 @@ function selectChoice(i) {
   answers[current] = { house: chosen.house, text: chosen.text };
 
   if (current < questions.length - 1) {
-    setTimeout(() => { current++; renderQuestion(); }, 300);
+    current++; renderQuestion();
   } else {
     const nextBtn = document.getElementById('nextBtn');
     nextBtn.disabled = false;
