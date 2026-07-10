@@ -78,6 +78,7 @@ function doPost(e) {
     });
 
     sendResultEmail(data);
+    formatAllSheets(ss);
 
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok' }))
@@ -231,6 +232,18 @@ function sendResultEmail(data) {
   MailApp.sendEmail({ to: data.email, from: 'ssa.data.management@gmail.com', name: 'SSA House Sorting', subject: subject, htmlBody: body });
 }
 
+// ── FORMAT: wrap text, auto-resize columns and rows ──
+function formatAllSheets(ss) {
+  [SHEET_NAME, 'Legacy', 'Valor', 'Horizon'].forEach(name => {
+    const tab = ss.getSheetByName(name);
+    if (!tab || tab.getLastRow() < 1) return;
+    const range = tab.getDataRange();
+    range.setWrap(true);
+    tab.autoResizeColumns(1, tab.getLastColumn());
+    tab.autoResizeRows(1, tab.getLastRow());
+  });
+}
+
 // ── SYNC: rebuilds house tabs from Submissions ──
 function syncHouseTabs() {
   const ss      = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -288,6 +301,7 @@ function syncHouseTabs() {
       }
     });
   });
+  formatAllSheets(ss);
 }
 
 // Run this ONCE to set up the auto-sync trigger
