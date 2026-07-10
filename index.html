@@ -489,11 +489,20 @@ function showResult() {
   const houseCounts = { Legacy: 0, Valor: 0, Horizon: 0 };
   log.forEach(r => { if (houseCounts[r.house] !== undefined) houseCounts[r.house]++; });
 
-  const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  const naturalWinner = ranked[0][0];
-  const winner = houseCounts[naturalWinner] < HOUSE_CAP
-    ? naturalWinner
-    : Object.entries(houseCounts).sort((a, b) => a[1] - b[1])[0][0];
+  const topScore = Math.max(...Object.values(scores));
+  const tied = Object.entries(scores)
+    .filter(([, v]) => v === topScore)
+    .map(([h]) => h);
+
+  // Among tied houses, pick the one with fewest students; if all capped, pick lowest overall
+  const eligibleTied = tied.filter(h => houseCounts[h] < HOUSE_CAP);
+  let naturalWinner;
+  if (eligibleTied.length > 0) {
+    naturalWinner = eligibleTied.sort((a, b) => houseCounts[a] - houseCounts[b])[0];
+  } else {
+    naturalWinner = Object.entries(houseCounts).sort((a, b) => a[1] - b[1])[0][0];
+  }
+  const winner = naturalWinner;
 
   const h = HOUSES[winner];
   const resultEl = document.getElementById('screenResult');
