@@ -3,6 +3,7 @@
 // Copy the deployment URL into index.html where indicated.
 
 const SHEET_NAME = 'Submissions';
+const SPREADSHEET_ID = '1BKjoAogVRM2ezBZWiJuyyUlgAk9vv5Ylc9T89A2azvY';
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -10,7 +11,7 @@ function doPost(e) {
 
   try {
     const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
     // ── MAIN SUBMISSIONS SHEET ──
     let sheet = ss.getSheetByName(SHEET_NAME);
@@ -232,7 +233,7 @@ function sendResultEmail(data) {
 
 // ── SYNC: rebuilds house tabs from Submissions ──
 function syncHouseTabs() {
-  const ss      = SpreadsheetApp.getActiveSpreadsheet();
+  const ss      = SpreadsheetApp.openById(SPREADSHEET_ID);
   const subSheet = ss.getSheetByName(SHEET_NAME);
   if (!subSheet) return;
 
@@ -296,7 +297,7 @@ function createSyncTrigger() {
     if (t.getHandlerFunction() === 'onSheetChange') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('onSheetChange')
-    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .forSpreadsheet(SpreadsheetApp.openById(SPREADSHEET_ID))
     .onChange()
     .create();
 }
@@ -307,7 +308,7 @@ function onSheetChange(e) {
 
 function doGet(e) {
   if (e && e.parameter && e.parameter.action === 'counts') {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const counts = {};
     ['Legacy', 'Valor', 'Horizon'].forEach(h => {
       const tab = ss.getSheetByName(h);
