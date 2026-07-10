@@ -675,6 +675,15 @@ function fireParticles(color) {
 }
 
 function returnToMain() {
+  document.getElementById('firstName').value = '';
+  document.getElementById('lastName').value  = '';
+  document.getElementById('studentEmail').value = '';
+  current      = 0;
+  answers      = [];
+  scores       = { Legacy: 0, Valor: 0, Horizon: 0 };
+  studentName  = 'Seeker';
+  studentEmail = '';
+  questions    = [];
   show('screenIntro');
 }
 
