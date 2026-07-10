@@ -540,15 +540,6 @@ function showResult() {
   ];
   seq.forEach(([t, fn]) => setTimeout(fn, t));
 
-  document.getElementById('breakdown').innerHTML = answers.map((a, idx) => {
-    const badgeClass = `badge-${a.house.toLowerCase()}`;
-    return `<li class="breakdown-item">
-      <span class="q-num">Q${idx + 1}</span>
-      <span class="b-answer">${a.text}</span>
-      <span class="b-badge ${badgeClass}">${a.house}</span>
-    </li>`;
-  }).join('');
-
   document.getElementById('tally').innerHTML = Object.entries(scores)
     .sort((a, b) => b[1] - a[1])
     .map(([n, c]) => `<div class="tally-item">${n}: <strong>${c}</strong></div>`)
