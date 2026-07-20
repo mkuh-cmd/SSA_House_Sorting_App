@@ -47,8 +47,8 @@ function doPost(e) {
     const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Student ID',
                           'Legacy Score', 'Valor Score', 'Horizon Score',
                           'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10'];
-    const houseColors  = { Legacy: '#6c2fa0', Valor: '#c0392b', Horizon: '#2471a3' };
-    const tabColors    = { Legacy: '#d7b8f0', Valor: '#f0b8b8', Horizon: '#b8d8f0' };
+    const houseColors  = { Legacy: '#1a7a40', Valor: '#c0392b', Horizon: '#2471a3' };
+    const tabColors    = { Legacy: '#b8f0c8', Valor: '#f0b8b8', Horizon: '#b8d8f0' };
 
     houses.forEach(h => {
       let tab = ss.getSheetByName(h);
@@ -267,8 +267,8 @@ function syncHouseTabs() {
   const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Student ID',
                         'Legacy Score', 'Valor Score', 'Horizon Score',
                         'Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10'];
-  const houseColors  = { Legacy: '#6c2fa0', Valor: '#c0392b', Horizon: '#2471a3' };
-  const tabColors    = { Legacy: '#d7b8f0', Valor: '#f0b8b8', Horizon: '#b8d8f0' };
+  const houseColors  = { Legacy: '#1a7a40', Valor: '#c0392b', Horizon: '#2471a3' };
+  const tabColors    = { Legacy: '#b8f0c8', Valor: '#f0b8b8', Horizon: '#b8d8f0' };
 
   ['Legacy','Valor','Horizon'].forEach(h => {
     let tab = ss.getSheetByName(h);
