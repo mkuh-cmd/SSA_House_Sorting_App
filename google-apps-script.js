@@ -305,6 +305,20 @@ function syncHouseTabs() {
   formatAllSheets(ss);
 }
 
+// Run this ONCE to rename Email → Student ID on all tabs
+function migrateEmailToStudentId() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  [SHEET_NAME, 'Legacy', 'Valor', 'Horizon'].forEach(name => {
+    const tab = ss.getSheetByName(name);
+    if (!tab) return;
+    const headers = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0];
+    const col = headers.indexOf('Email');
+    if (col !== -1) {
+      tab.getRange(1, col + 1).setValue('Student ID');
+    }
+  });
+}
+
 // Run this ONCE to set up the auto-sync trigger
 function createSyncTrigger() {
   // Remove any existing onChange triggers to avoid duplicates
