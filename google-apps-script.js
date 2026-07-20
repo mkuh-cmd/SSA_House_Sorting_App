@@ -18,7 +18,7 @@ function doPost(e) {
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_NAME);
       sheet.appendRow([
-        'Student #', 'Timestamp', 'First Name', 'Last Name', 'Email', 'House',
+        'Student #', 'Timestamp', 'First Name', 'Last Name', 'Student ID', 'House',
         'Legacy Score', 'Valor Score', 'Horizon Score',
         'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10'
       ]);
@@ -34,7 +34,7 @@ function doPost(e) {
       data.timestamp,
       data.firstName,
       data.lastName,
-      data.email,
+      data.studentId,
       data.house,
       data.scores.Legacy,
       data.scores.Valor,
@@ -44,7 +44,7 @@ function doPost(e) {
 
     // ── HOUSE TABS ──
     const houses = ['Legacy', 'Valor', 'Horizon'];
-    const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Email',
+    const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Student ID',
                           'Legacy Score', 'Valor Score', 'Horizon Score',
                           'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10'];
     const houseColors  = { Legacy: '#6c2fa0', Valor: '#c0392b', Horizon: '#2471a3' };
@@ -68,7 +68,7 @@ function doPost(e) {
           data.timestamp,
           data.firstName,
           data.lastName,
-          data.email,
+          data.studentId,
           data.scores.Legacy,
           data.scores.Valor,
           data.scores.Horizon,
@@ -77,7 +77,6 @@ function doPost(e) {
       }
     });
 
-    sendResultEmail(data);
     formatAllSheets(ss);
 
     return ContentService
@@ -93,7 +92,9 @@ function doPost(e) {
   }
 }
 
-function sendResultEmail(data) {
+// sendResultEmail removed — emails replaced by Student ID field
+
+function sendResultEmail_DISABLED(data) {
   if (!data.email) return;
 
   const houseDetails = {
@@ -263,7 +264,7 @@ function syncHouseTabs() {
   const header = rows[0]; // Submissions header row
   const houseColIndex = header.indexOf('House'); // column F (index 5)
 
-  const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Email',
+  const houseHeaders = ['Student #', 'Timestamp', 'First Name', 'Last Name', 'Student ID',
                         'Legacy Score', 'Valor Score', 'Horizon Score',
                         'Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10'];
   const houseColors  = { Legacy: '#6c2fa0', Valor: '#c0392b', Horizon: '#2471a3' };

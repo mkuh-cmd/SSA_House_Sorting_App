@@ -245,10 +245,9 @@
         </div>
       </div>
       <div class="intake-field full">
-        <label for="studentEmail">Student Email</label>
-        <input type="email" id="studentEmail" placeholder="student#@student.myscps.us" maxlength="100"
+        <label for="studentId">Student ID</label>
+        <input type="text" id="studentId" placeholder="e.g. 123456" maxlength="20"
                onkeydown="if(event.key==='Enter') startQuiz()" />
-        <span class="intake-hint">e.g. 123456@student.myscps.us</span>
       </div>
     </div>
     <button class="btn" onclick="startQuiz()">Begin the Sorting</button>
@@ -355,8 +354,8 @@ let questions = [];
 let answers   = [];
 let current   = 0;
 let scores    = { Legacy: 0, Valor: 0, Horizon: 0 };
-let studentName  = '';
-let studentEmail = '';
+let studentName = '';
+let studentId   = '';
 
 // Shift+R = reset for testing
 document.addEventListener('keydown', e => {
@@ -385,7 +384,7 @@ function shuffle(arr) {
 function startQuiz() {
   const first = document.getElementById('firstName').value.trim();
   const last  = document.getElementById('lastName').value.trim();
-  studentEmail = document.getElementById('studentEmail').value.trim();
+  studentId = document.getElementById('studentId').value.trim();
   studentName  = [first, last].filter(Boolean).join(' ') || 'Seeker';
   questions = shuffle([...QUESTIONS]).map(q => ({ ...q, choices: shuffle([...q.choices]) }));
   answers   = [];
@@ -509,8 +508,7 @@ function showResult() {
   resultEl.className = h.cls;
 
   const greeting  = studentName !== 'Seeker' ? `Well done, ${studentName}.` : 'The sorting is complete.';
-  const emailLine = studentEmail ? ` · ${studentEmail}` : '';
-  document.getElementById('resultGreeting').textContent = greeting + emailLine;
+  document.getElementById('resultGreeting').textContent = greeting;
   document.getElementById('houseName').textContent      = winner;
   document.getElementById('houseReveal').innerHTML      = h.emoji;
   document.getElementById('houseTagline').textContent   = h.tagline;
@@ -546,7 +544,7 @@ function showResult() {
     .join('');
 
   // Save to local log
-  const entry = { name: studentName, email: studentEmail, house: winner, timestamp: new Date().toISOString() };
+  const entry = { name: studentName, studentId, house: winner, timestamp: new Date().toISOString() };
   log.push(entry);
   localStorage.setItem('houseSort_log', JSON.stringify(log));
 
@@ -554,7 +552,7 @@ function showResult() {
   const submission = {
     firstName: document.getElementById('firstName').value.trim(),
     lastName:  document.getElementById('lastName').value.trim(),
-    email:     studentEmail,
+    studentId,
     house:     winner,
     scores,
     answers:   answers.map(a => a.text),
@@ -682,12 +680,12 @@ function fireParticles(color) {
 function returnToMain() {
   document.getElementById('firstName').value = '';
   document.getElementById('lastName').value  = '';
-  document.getElementById('studentEmail').value = '';
+  document.getElementById('studentId').value = '';
   current      = 0;
   answers      = [];
   scores       = { Legacy: 0, Valor: 0, Horizon: 0 };
   studentName  = 'Seeker';
-  studentEmail = '';
+  studentId = '';
   questions    = [];
   show('screenIntro');
 }
